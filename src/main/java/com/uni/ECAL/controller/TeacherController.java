@@ -1,7 +1,13 @@
 package com.uni.ECAL.controller;
 
+import com.uni.ECAL.model.Chapter;
+import com.uni.ECAL.model.Course;
 import com.uni.ECAL.model.Teacher;
+import com.uni.ECAL.model.Wishlist;
+import com.uni.ECAL.services.ChapterService;
+import com.uni.ECAL.services.CourseService;
 import com.uni.ECAL.services.TeacherService;
+import com.uni.ECAL.services.WhishlistService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +20,15 @@ import java.util.List;
 public class TeacherController {
     @Autowired
     private TeacherService teacherService;
+
+    @Autowired
+    private CourseService courseService;
+
+    @Autowired
+    private ChapterService chapterService;
+
+    @Autowired
+    private WhishlistService whishlistService;
 
 
     @GetMapping("/teacherlist")
@@ -43,6 +58,29 @@ public class TeacherController {
         teacherObj = teacherService.addNewTeacher(teacher);
         teacherService.updateStatus(teacher.getEmail());
         return teacherObj;
+    }
+
+
+    @PostMapping("/addCourse")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public Course addNewCourse(@RequestBody Course course) throws Exception
+    {
+        Course courseObj = null;
+        String newID = getNewID();
+        course.setCourseid(newID);
+
+        courseObj = courseService.addNewCourse(course);
+        return courseObj;
+    }
+
+
+    @PostMapping("/addnewchapter")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public Chapter addNewChapters(@RequestBody Chapter chapter) throws Exception
+    {
+        Chapter chapterObj = null;
+        chapterObj = chapterService.addNewChapter(chapter);
+        return chapterObj;
     }
 
 
@@ -94,6 +132,85 @@ public class TeacherController {
     }
 
 
+    @GetMapping("/courselistbyname/{coursename}")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<List<Course>> getCourseListByName(@PathVariable String coursename) throws Exception
+    {
+        Course courseList = courseService.fetchCourseByCoursename(coursename);
+        System.out.println(courseList.getCoursename()+" ");
+        List<Course> courselist = new ArrayList<>();
+        courselist.add(courseList);
+        return new ResponseEntity<List<Course>>(courselist, HttpStatus.OK);
+    }
+
+
+    @GetMapping("/youtubecourselist")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<List<Course>> getYoutubeCourseList() throws Exception
+    {
+        List<Course> youtubeCourseList = courseService.fetchByCoursetype("Youtube");
+//		for(Course list:youtubeCourseList)
+//		{
+//			System.out.println(list.getYoutubeurl());
+//		}
+        return new ResponseEntity<List<Course>>(youtubeCourseList, HttpStatus.OK);
+    }
+
+
+
+    @GetMapping("/websitecourselist")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<List<Course>> getWebsiteCourseList() throws Exception
+    {
+        List<Course> websiteCourseList = courseService.fetchByCoursetype("Website");
+        return new ResponseEntity<List<Course>>(websiteCourseList, HttpStatus.OK);
+    }
+
+
+
+
+    @GetMapping("/getcoursename")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<List<String>> getCOurseNames() throws Exception {
+        List<Course> courses = courseService.getAllCourses();
+        List<String> courseNames = new ArrayList<>();
+        for (Course obj : courses) {
+            courseNames.add(obj.getCoursename());
+        }
+        return new ResponseEntity<>(courseNames, HttpStatus.OK);
+    }
+
+
+    @GetMapping("/gettotalwhishlist")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<List<Integer>> getTotalWishlist() throws Exception{
+        List<Wishlist> wishlists = whishlistService.getAllLikedCourses();
+        List<Integer> wishlistCount = new ArrayList<>();
+        wishlistCount.add(wishlists.size());
+        return new ResponseEntity<>(wishlistCount, HttpStatus.OK);
+    }
+
+    @GetMapping("/gettotalchapters")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<List<Integer>> getTotalChapters() throws Exception
+    {
+        List<Chapter> chapters = chapterService.getAllChapters();
+        List<Integer> chaptersCount = new ArrayList<>();
+        chaptersCount.add(chapters.size());
+        return new ResponseEntity<List<Integer>>(chaptersCount, HttpStatus.OK);
+    }
+
+    @GetMapping("/gettotalcourses")
+    @CrossOrigin(origins = "http://localhost:4200")
+    public ResponseEntity<List<Integer>> getTotalCourses() throws Exception
+    {
+        List<Course> courses = courseService.getAllCourses();
+        List<Integer> coursesCount = new ArrayList<>();
+        coursesCount.add(courses.size());
+        return new ResponseEntity<List<Integer>>(coursesCount, HttpStatus.OK);
+    }
+
+
     public String getNewID()
     {
         String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"+"0123456789"+"abcdefghijklmnopqrstuvxyz";
@@ -105,6 +222,5 @@ public class TeacherController {
         }
         return sb.toString();
     }
-
 
 }
